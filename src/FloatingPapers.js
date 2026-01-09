@@ -34,15 +34,15 @@ export default class FloatingPapers {
   async #loadTexture() {
     // Load color map
     const textureLoader = new THREE.TextureLoader();
-    this.paperTexture = await textureLoader.loadAsync("/paper-texture.jpg");
-    this.paperTexture2 = await textureLoader.loadAsync("/back-paper.jpg");
+    this.paperTexture = await textureLoader.loadAsync(`${import.meta.env.BASE_URL}paper-texture.jpg`);
+    this.paperTexture2 = await textureLoader.loadAsync(`${import.meta.env.BASE_URL}back-paper.jpg`);
     this.paperTexture.colorSpace = THREE.SRGBColorSpace;
     this.paperTexture2.colorSpace = THREE.SRGBColorSpace;
 
     this.paperMap = [this.paperTexture, this.paperTexture2];
 
     // Load PBR textures from Paper003
-    const pbrLoader = new PBRTextureLoader("/Paper003_1K-JPG", {
+    const pbrLoader = new PBRTextureLoader(`${import.meta.env.BASE_URL}Paper003_1K-JPG`, {
       repeat: { x: 1, y: 1 },
     });
 

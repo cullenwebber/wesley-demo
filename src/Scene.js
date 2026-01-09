@@ -166,7 +166,7 @@ export default class Scene {
 
   async #addObjects() {
     // Load Metal007 PBR textures with scaling
-    const textureLoader = new PBRTextureLoader("/Marble019_1K-JPG", {
+    const textureLoader = new PBRTextureLoader(`${import.meta.env.BASE_URL}Marble019_1K-JPG`, {
       repeat: { x: 12, y: 12 },
     });
 
@@ -187,7 +187,7 @@ export default class Scene {
         // roughnessMap: textureLoader.textures.roughnessMap,
       });
 
-      new ImportGltf("/wyvern-smooth_v2.glb", {
+      new ImportGltf(`${import.meta.env.BASE_URL}wyvern-smooth_v2.glb`, {
         onLoad: (model) => {
           this.mesh = model;
 
@@ -238,7 +238,7 @@ export default class Scene {
     const loader = new TTFLoader();
 
     return new Promise((resolve) => {
-      loader.load("/leitura.ttf", async (fontData) => {
+      loader.load(`${import.meta.env.BASE_URL}leitura.ttf`, async (fontData) => {
         const font = new Font(fontData);
 
         let geometry = new TextGeometry("WESLEY COLLEGE WESLEY COLLEGE", {
@@ -286,7 +286,7 @@ export default class Scene {
         geometry.computeBoundingBox();
         geometry.center();
 
-        let textureLoader = new PBRTextureLoader("/Metal007_1K-JPG", {
+        let textureLoader = new PBRTextureLoader(`${import.meta.env.BASE_URL}Metal007_1K-JPG`, {
           repeat: { x: 1, y: 1 },
         });
 
