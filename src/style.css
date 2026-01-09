@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+* {
+  @apply antialiased tracking-tight;
+}
+
+@theme {
+  --color-darkGreen: #08291d;
+  --color-yellow: #e3c820;
+}
