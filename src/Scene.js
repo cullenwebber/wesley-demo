@@ -65,15 +65,15 @@ export default class Scene {
     this.#calculateAspectRatio();
     this.camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 0.001, 100);
     this.camera.position.z = 8;
-    this.camera.position.y = -3;
+    this.camera.position.y = -0.5;
   }
 
   #setupCameraRig() {
     this.cameraRig = new CameraRig(this.camera, {
       target: new THREE.Vector3(0, 0, 0),
-      xLimit: [-1.0, 1],
-      yLimit: [-3.5, -2.5],
-      damping: 1.75,
+      xLimit: [-0.5, 0.5],
+      yLimit: [-0.75, -0.25],
+      damping: 1.65,
     });
   }
 
@@ -166,9 +166,12 @@ export default class Scene {
 
   async #addObjects() {
     // Load Metal007 PBR textures with scaling
-    const textureLoader = new PBRTextureLoader(`${import.meta.env.BASE_URL}Marble019_1K-JPG`, {
-      repeat: { x: 12, y: 12 },
-    });
+    const textureLoader = new PBRTextureLoader(
+      `${import.meta.env.BASE_URL}Marble019_1K-JPG`,
+      {
+        repeat: { x: 12, y: 12 },
+      }
+    );
 
     try {
       await textureLoader.loadTextures({
@@ -238,123 +241,129 @@ export default class Scene {
     const loader = new TTFLoader();
 
     return new Promise((resolve) => {
-      loader.load(`${import.meta.env.BASE_URL}leitura.ttf`, async (fontData) => {
-        const font = new Font(fontData);
+      loader.load(
+        `${import.meta.env.BASE_URL}leitura.ttf`,
+        async (fontData) => {
+          const font = new Font(fontData);
 
-        let geometry = new TextGeometry("WESLEY COLLEGE WESLEY COLLEGE", {
-          font: font,
-          size: 0.75,
-          depth: 0.001,
-          curveSegments: 32,
-          bevelEnabled: true,
-          bevelThickness: 0.05,
-          bevelSize: 0.03,
-          bevelSegments: 1,
-        });
+          let geometry = new TextGeometry("WESLEY COLLEGE WESLEY COLLEGE", {
+            font: font,
+            size: 0.75,
+            depth: 0.001,
+            curveSegments: 32,
+            bevelEnabled: true,
+            bevelThickness: 0.05,
+            bevelSize: 0.03,
+            bevelSegments: 1,
+          });
 
-        // Center the geometry first
-        geometry.computeBoundingBox();
-        geometry.translate(
-          -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x),
-          0,
-          0
-        );
+          // Center the geometry first
+          geometry.computeBoundingBox();
+          geometry.translate(
+            -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x),
+            0,
+            0
+          );
 
-        // Curve the text around Y axis
-        const radius = 3; // Adjust for tighter/looser curve
-        const positionAttr = geometry.attributes.position;
+          // Curve the text around Y axis
+          const radius = 3; // Adjust for tighter/looser curve
+          const positionAttr = geometry.attributes.position;
 
-        for (let i = 0; i < positionAttr.count; i++) {
-          const x = positionAttr.getX(i);
-          const y = positionAttr.getY(i);
-          const z = positionAttr.getZ(i);
+          for (let i = 0; i < positionAttr.count; i++) {
+            const x = positionAttr.getX(i);
+            const y = positionAttr.getY(i);
+            const z = positionAttr.getZ(i);
 
-          // Convert X position to angle
-          const angle = x / radius;
+            // Convert X position to angle
+            const angle = x / radius;
 
-          // Calculate new position on curve
-          const newX = Math.sin(angle) * (radius + z);
-          const newZ = Math.cos(angle) * (radius + z) - radius;
+            // Calculate new position on curve
+            const newX = Math.sin(angle) * (radius + z);
+            const newZ = Math.cos(angle) * (radius + z) - radius;
 
-          positionAttr.setXYZ(i, newX, y, newZ);
+            positionAttr.setXYZ(i, newX, y, newZ);
+          }
+
+          positionAttr.needsUpdate = true;
+          geometry.computeVertexNormals();
+
+          // Re-center geometry after curving so rotation is around center
+          geometry.computeBoundingBox();
+          geometry.center();
+
+          let textureLoader = new PBRTextureLoader(
+            `${import.meta.env.BASE_URL}Metal007_1K-JPG`,
+            {
+              repeat: { x: 1, y: 1 },
+            }
+          );
+
+          await textureLoader.loadTextures({
+            color: "Metal007_1K-JPG_Color.jpg",
+            normal: "Metal007_1K-JPG_NormalGL.jpg",
+            roughness: "Metal007_1K-JPG_Roughness.jpg",
+            displacement: "Metal007_1K-JPG_Displacement.jpg",
+            metalness: "Metal007_1K-JPG_Metalness.jpg",
+          });
+
+          let material = new THREE.MeshStandardMaterial({
+            side: THREE.DoubleSide,
+            color: 0xe4cc35,
+            metalness: 0.9,
+            roughness: 1.0,
+            map: textureLoader.textures.map,
+            normalMap: textureLoader.textures.normalMap,
+            roughnessMap: textureLoader.textures.roughnessMap,
+            metalnessMap: textureLoader.textures.metalnessMap,
+            flatshading: false,
+            envMap: this.envMap,
+          });
+
+          // const material = new THREE.MeshStandardMaterial({
+          //   color: "#E4CC35",
+          //   roughness: 0.4,
+          //   metalness: 1.0,
+          //   envMap: this.envMap,
+          // });
+
+          this.titleText = new THREE.Mesh(geometry, material);
+          this.titleText.position.set(0, -0.65, 0);
+          this.titleText.rotation.x = Math.PI / 16;
+          this.titleText.rotation.z = -Math.PI / 16;
+          this.titleText.scale.set(0.7, 0.7, 0.7);
+          // this.scene.add(this.titleText);
+
+          geometry = new TextGeometry("Welcome to", {
+            font: font,
+            size: 0.25,
+            depth: 0.001,
+            curveSegments: 32,
+          });
+
+          let geometry2 = new TextGeometry("Wesley College", {
+            font: font,
+            size: 0.5,
+            depth: 0.001,
+            curveSegments: 32,
+          });
+          material = new THREE.MeshBasicMaterial({ color: 0xe4cc35 });
+          let material2 = new THREE.MeshBasicMaterial({ color: 0xffffff });
+          this.middleText = new THREE.Mesh(geometry, material);
+          this.middleText2 = new THREE.Mesh(geometry2, material2);
+          geometry.computeVertexNormals();
+          geometry2.computeVertexNormals();
+          geometry.computeBoundingBox();
+          geometry2.computeBoundingBox();
+          geometry.center();
+          geometry2.center();
+
+          this.middleText.position.set(0, -0.25, 1.5);
+          this.middleText2.position.set(0, -0.9, 1.5);
+          this.scene.add(this.middleText);
+          this.scene.add(this.middleText2);
+          resolve();
         }
-
-        positionAttr.needsUpdate = true;
-        geometry.computeVertexNormals();
-
-        // Re-center geometry after curving so rotation is around center
-        geometry.computeBoundingBox();
-        geometry.center();
-
-        let textureLoader = new PBRTextureLoader(`${import.meta.env.BASE_URL}Metal007_1K-JPG`, {
-          repeat: { x: 1, y: 1 },
-        });
-
-        await textureLoader.loadTextures({
-          color: "Metal007_1K-JPG_Color.jpg",
-          normal: "Metal007_1K-JPG_NormalGL.jpg",
-          roughness: "Metal007_1K-JPG_Roughness.jpg",
-          displacement: "Metal007_1K-JPG_Displacement.jpg",
-          metalness: "Metal007_1K-JPG_Metalness.jpg",
-        });
-
-        let material = new THREE.MeshStandardMaterial({
-          side: THREE.DoubleSide,
-          color: 0xe4cc35,
-          metalness: 0.9,
-          roughness: 1.0,
-          map: textureLoader.textures.map,
-          normalMap: textureLoader.textures.normalMap,
-          roughnessMap: textureLoader.textures.roughnessMap,
-          metalnessMap: textureLoader.textures.metalnessMap,
-          flatshading: false,
-          envMap: this.envMap,
-        });
-
-        // const material = new THREE.MeshStandardMaterial({
-        //   color: "#E4CC35",
-        //   roughness: 0.4,
-        //   metalness: 1.0,
-        //   envMap: this.envMap,
-        // });
-
-        this.titleText = new THREE.Mesh(geometry, material);
-        this.titleText.position.set(0, -0.65, 0);
-        this.titleText.rotation.x = Math.PI / 16;
-        this.titleText.rotation.z = -Math.PI / 16;
-        this.titleText.scale.set(0.7, 0.7, 0.7);
-        // this.scene.add(this.titleText);
-
-        geometry = new TextGeometry("Welcome to", {
-          font: font,
-          size: 0.25,
-          depth: 0.001,
-          curveSegments: 32,
-        });
-
-        let geometry2 = new TextGeometry("Wesley College", {
-          font: font,
-          size: 0.5,
-          depth: 0.001,
-          curveSegments: 32,
-        });
-        material = new THREE.MeshBasicMaterial({ color: 0xe4cc35 });
-        let material2 = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        this.middleText = new THREE.Mesh(geometry, material);
-        this.middleText2 = new THREE.Mesh(geometry2, material2);
-        geometry.computeVertexNormals();
-        geometry2.computeVertexNormals();
-        geometry.computeBoundingBox();
-        geometry2.computeBoundingBox();
-        geometry.center();
-        geometry2.center();
-
-        this.middleText.position.set(0, -0.25, 1.5);
-        this.middleText2.position.set(0, -0.9, 1.5);
-        this.scene.add(this.middleText);
-        this.scene.add(this.middleText2);
-        resolve();
-      });
+      );
     });
   }
 

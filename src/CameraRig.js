@@ -63,6 +63,6 @@ export class CameraRig {
     }
 
     // Always look at target
-    this.camera.lookAt(this.target);
+    // this.camera.lookAt(this.target);
   }
 }
