@@ -71,7 +71,7 @@ export default class Scene {
   #setupCameraRig() {
     this.cameraRig = new CameraRig(this.camera, {
       target: new THREE.Vector3(0, 0, 0),
-      xLimit: [-0.5, 0.5],
+      xLimit: [-0.25, 0.25],
       yLimit: [-0.75, -0.25],
       damping: 1.65,
     });
@@ -134,7 +134,7 @@ export default class Scene {
 
     // Mouse-following light
     this.mouseLight = new THREE.PointLight(0x0dec400, 2, 20, 2);
-    this.mouseLight.position.set(0, 0, 2);
+    this.mouseLight.position.set(0, 0, 3);
     this.mouseLight.castShadow = true;
     this.mouseLight.shadow.mapSize.width = 1024;
     this.mouseLight.shadow.mapSize.height = 1024;
@@ -358,7 +358,9 @@ export default class Scene {
           geometry2.center();
 
           this.middleText.position.set(0, -0.25, 1.5);
+          this.middleText.castShadow = true;
           this.middleText2.position.set(0, -0.9, 1.5);
+          this.middleText2.castShadow = true;
           this.scene.add(this.middleText);
           this.scene.add(this.middleText2);
           resolve();
